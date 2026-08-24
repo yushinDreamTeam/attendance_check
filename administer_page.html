@@ -1,0 +1,200 @@
+<%@ Language="VBScript" CodePage="65001" %>
+<%
+Response.Charset = "UTF-8"
+
+Dim search
+search = Trim(Request.QueryString("search"))
+%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>연수 관리</title>
+</head>
+
+<body>
+
+<h2>연수 관리</h2>
+
+<form method="get" action="admin.asp">
+    <input type="text" name="search" size="35" value="<%=Server.HTMLEncode(search)%>" placeholder="연수 검색">
+    <input type="submit" value="검색">
+</form>
+
+<br>
+
+<table border="1" width="500" cellpadding="10">
+
+<%
+If search = "" Or InStr(LCase("AI 활용 교직원 연수"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>AI 활용 교직원 연수</b><br>
+                2026-08-24
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=1'">
+                <input type="button" value="제거" onclick="removeTraining(1)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+<%
+If search = "" Or InStr(LCase("개인정보 보호 교육"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>개인정보 보호 교육</b><br>
+                2026-08-18
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=2'">
+                <input type="button" value="제거" onclick="removeTraining(2)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+<%
+If search = "" Or InStr(LCase("학교폭력 예방 교육"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>학교폭력 예방 교육</b><br>
+                2026-08-10
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=3'">
+                <input type="button" value="제거" onclick="removeTraining(3)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+<%
+If search = "" Or InStr(LCase("응급처치 및 안전교육"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>응급처치 및 안전교육</b><br>
+                2026-07-22
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=4'">
+                <input type="button" value="제거" onclick="removeTraining(4)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+<%
+If search = "" Or InStr(LCase("교직원 성희롱 예방교육"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>교직원 성희롱 예방교육</b><br>
+                2026-07-11
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=5'">
+                <input type="button" value="제거" onclick="removeTraining(5)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+<%
+If search = "" Or InStr(LCase("정보보안 연수"), LCase(search)) > 0 Then
+%>
+
+<tr>
+<td>
+    <table width="100%">
+        <tr>
+            <td>
+                <b>정보보안 연수</b><br>
+                2026-06-30
+            </td>
+
+            <td align="right">
+                <input type="button" value="수정" onclick="location.href='edit.asp?id=6'">
+                <input type="button" value="제거" onclick="removeTraining(6)">
+            </td>
+        </tr>
+    </table>
+</td>
+</tr>
+
+<%
+End If
+%>
+
+</table>
+
+<br>
+
+<input type="button" value="+" onclick="location.href='add.asp'" style="font-size:30px; width:50px; height:50px;">
+
+<script>
+function removeTraining(id) {
+    if (confirm("이 연수를 제거하시겠습니까?")) {
+        location.href = "delete.asp?id=" + id;
+    }
+}
+</script>
+
+</body>
+</html>
