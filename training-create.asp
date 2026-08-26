@@ -9,7 +9,7 @@
   <main class="page">
     <div class="page-heading">
       <div><h1>새 연수 등록</h1></div>
-      <a class="btn secondary" href="admin.asp">목록으로</a>
+      <a class="btn secondary" href="administer_page.asp">목록으로</a>
     </div>
 
     <!-- 실제 DB 연결 시 action을 training-save.asp로 두고, 시연용 JS submit 방지를 제거합니다. -->
@@ -59,7 +59,7 @@
         </div>
       </section>
 
-      <div class="actions"><a class="btn secondary" href="admin.asp">취소</a><button class="btn primary" type="submit">연수 등록</button></div>
+      <div class="actions"><a class="btn secondary" href="administer_page.asp">취소</a><button class="btn primary" type="submit">연수 등록</button></div>
     </form>
   </main>
   <div id="toast" class="toast" role="status"></div>
