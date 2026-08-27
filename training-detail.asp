@@ -1,3 +1,38 @@
+<%@ Language="VBScript" CodePage="65001" %>
+<%
+Response.CodePage = 65001
+Response.CharSet = "utf-8"
+
+Dim trainingId, conn, rs, sql, trainingTitle
+trainingId = Request.QueryString("id")
+
+If Not IsNumeric(trainingId) Then
+  Response.Status = "400 Bad Request"
+  Response.Write "잘못된 연수 ID입니다."
+  Response.End
+End If
+
+Set conn = Server.CreateObject("ADODB.Connection")
+conn.Open "DSN=attendanceDB"
+sql = "SELECT [연수제목] FROM [lesson_list] WHERE [ID] = " & CLng(trainingId)
+Set rs = conn.Execute(sql)
+
+If rs.EOF Then
+  rs.Close
+  conn.Close
+  Set rs = Nothing
+  Set conn = Nothing
+  Response.Status = "404 Not Found"
+  Response.Write "해당 연수를 찾을 수 없습니다."
+  Response.End
+End If
+
+trainingTitle = rs("연수제목").Value
+rs.Close
+Set rs = Nothing
+conn.Close
+Set conn = Nothing
+%>
 <!doctype html>
 <html lang="ko">
 <head>
@@ -17,14 +52,14 @@
     <div class="detail-layout">
       <!-- 실제 DB 연결 시 trainingId로 조회한 값을 각 value와 data-view-for 영역에 출력합니다. -->
       <form id="trainingDetailForm" class="card detail-card" action="training-update.asp" method="post">
-        <input name="trainingId" type="hidden" value="TR-20260824-001">
+        <input name="trainingId" type="hidden" value="<%= Server.HTMLEncode(trainingId) %>">
         <input id="generalStaffCount" type="hidden" value="46">
         <input id="leadershipCount" type="hidden" value="2">
         <input id="expectedCount" name="expectedCount" type="hidden" value="50">
         <section class="section">
           <div class="section-title-row"><div><h2>기본 정보</h2></div></div>
           <div class="grid two">
-            <div class="field full"><span class="field-label">연수 제목</span><div class="view-value" data-view-for="editTitle">2026학년도 아동학대 예방교육</div><input class="control edit-control" id="editTitle" name="title" required value="2026학년도 아동학대 예방교육" hidden></div>
+            <div class="field full"><span class="field-label">연수 제목</span><div class="view-value" data-view-for="editTitle"><%= Server.HTMLEncode(trainingTitle) %></div><input class="control edit-control" id="editTitle" name="title" required value="<%= Server.HTMLEncode(trainingTitle) %>" hidden></div>
             <div class="field"><span class="field-label">연수 날짜</span><div class="view-value" data-view-for="editDate">2026-08-28</div><input class="control edit-control" id="editDate" name="trainingDate" type="date" value="2026-08-28" hidden></div>
             <div class="field"><span class="field-label">시작 시간</span><div class="view-value" data-view-for="editTime">15:30</div><input class="control edit-control" id="editTime" name="trainingTime" type="time" value="15:30" hidden></div>
             <div class="field full"><span class="field-label">장소</span><div class="view-value" data-view-for="editPlace">본관 2층 시청각실</div><input class="control edit-control" id="editPlace" name="place" value="본관 2층 시청각실" hidden></div>

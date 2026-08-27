@@ -1,3 +1,22 @@
+<%@ Language="VBScript" CodePage="65001" %>
+<%
+    Response.CodePage = 65001
+    Response.CharSet = "utf-8"
+    Dim conn, sql, rs, lessonID
+    Set conn = Server.CreateObject("ADODB.Connection")
+    conn.Open "DSN=attendanceDB"
+
+    lessonID = Request.QueryString("id")
+    If Not IsNumeric(lessonID) Then
+        Response.Status = "400 Bad Request"
+        Response.Write "잘못된 연수 ID입니다."
+        Response.End
+    End If
+
+    sql = "SELECT * FROM lesson_list WHERE ID = " & CLng(lessonID)
+    Set rs = conn.Execute(sql)
+%>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,10 +26,10 @@
 </head>
 <body>
     <main id="user-page">
-
         <!-- 연수 제목 표시 영역 -->
         <section id="training-info">
-            <h1 id="training-title">연수 제목</h1>
+            <h1 id="training-title"><%= rs("연수제목") %></h1>
+            <p id="training-date"><%= rs("연수일시") %></p>
         </section>
 
         <!-- 사용자 입력 -->
