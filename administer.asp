@@ -1,8 +1,22 @@
+<%@ Language="VBScript" CodePage="65001" %>
+<%
+    Response.CodePage = 65001
+    Response.CharSet = "utf-8"
+
+    Dim conn, sql, rs, editId
+    Set conn = Server.CreateObject("ADODB.Connection")
+    conn.Open "DSN=attendanceDB"
+
+    sql = "SELECT * FROM lesson_list ORDER BY id DESC"
+    Set rs = Server.CreateObject("ADODB.Recordset")
+    rs.Open sql, conn
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>관리자</title>
+    <meta charset="UTF-8">
+    <title>연수 관리</title>
 </head>
 
 <body>
@@ -13,6 +27,7 @@
     <button>검색</button>
     --->
     
+    <a id = "teachersAdmin" href="teachers.asp">교직원 목록 관리</a>
     <div style="width:530px; height:450px; overflow-y:scroll;">
         <table>
             <thead>
@@ -61,4 +76,5 @@
 <%
     conn.Close
     set conn = nothing
+    set rs = nothing
 %>
