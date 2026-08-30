@@ -15,6 +15,35 @@
     End If
 
     Dim tableName = "signature" & lessonId
-    sql = "SELECT * FROM [" & tableName & "]"
+    sql = "SELECT * FROM [" & tableName & "] ORDER BY 이름"
     Set rs = conn.Execute(sql)
 %>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>출석 명단</title>
+</head>
+<body>
+    <h2>출석 명단</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>이름</th>
+                <th>서명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% Do While Not rs.EOF %>
+            <tr>
+                <td><%= rs("이름") %></td>
+                <td><%= rs("서명") %></td>
+            </tr>
+            <% 
+            rs.MoveNext
+            Loop 
+            %>
+        </tbody>
+    </table>
+</body>
+</html>
