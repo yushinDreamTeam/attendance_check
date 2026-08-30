@@ -1,238 +1,206 @@
-<%@ Language=VBScript %>
-
+<%@ Language="VBScript" CodePage="65001" %>
 <%
-'==================================================
-' 연수 등록 페이지
-' 기능:
-' 1. 연수 등록 화면 출력
-' 2. POST 요청 시 DB 저장
-' 3. 대상자 출석부 생성 (예정)
-'
-' 실제 테이블명은 DB 담당자 확인 필요
-'==================================================
+Response.CodePage = 65001
+Response.CharSet = "utf-8"
 
-Dim conn
-Dim sql
+Dim conn, rs, sql
+Dim lessonId, isEdit
+Dim title, trainingDate, memo
+Dim dateParts, dbDate
+Dim selectedTeacherIds, i
+Dim teacherIds, teacherNames
 
+lessonId = Request.QueryString("id")
+isEdit = (lessonId <> "")
+
+Set conn = Server.CreateObject("ADODB.Connection")
+conn.Open "DSN=attendanceDB"
+
+
+' 저장 눌렀을 때
 If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 
-    Dim title
-    Dim trainingDate
-    Dim trainingTime
-    Dim place
-    Dim description
-    Dim publicToken
-    Dim expectedCount
-
+    lessonId = Request.Form("lessonId")
     title = Request.Form("title")
     trainingDate = Request.Form("trainingDate")
-    trainingTime = Request.Form("trainingTime")
-    place = Request.Form("place")
-    description = Request.Form("description")
-    publicToken = Request.Form("publicToken")
-    expectedCount = Request.Form("expectedCount")
+    memo = Request.Form("memo")
 
-    Set conn = Server.CreateObject("ADODB.Connection")
+    ' 날짜 input 값 Access에 넣기 좋게 바꿈
+    dateParts = Split(trainingDate, "-")
+    dbDate = "#" & dateParts(1) & "/" & dateParts(2) & "/" & dateParts(0) & "#"
 
-    ' 실제 환경에 맞게 수정 필요
-    conn.Open "DSN=attendance"
+    ' 대상자 저장 방식 미정, 체크된 ID들만 받아두고
+    selectedTeacherIds = ""
 
-    ' TODO:
-    ' 실제 테이블명 확인 후 INSERT 작성
-    sql = ""
+    For i = 1 To Request.Form("targetTeacher").Count
+        If selectedTeacherIds <> "" Then
+            selectedTeacherIds = selectedTeacherIds & ","
+        End If
 
-    'conn.Execute sql
+        selectedTeacherIds = selectedTeacherIds & Request.Form("targetTeacher")(i)
+    Next
 
-    ' TODO:
-    ' 대상자 출석부 생성
-    ' 1. 교직원 테이블 조회
-    ' 2. 대상 조건 확인
-    ' 3. Attendance 데이터 생성
+    If lessonId = "" Then
+
+        ' 새 연수 등록
+        sql = "INSERT INTO lesson_list ([연수제목], [연수일시]) VALUES (" & _
+              "'" & title & "', " & dbDate & ")"
+
+        conn.Execute sql
+
+    Else
+
+        ' 기존 연수 수정
+        sql = "UPDATE lesson_list SET " & _
+              "[연수제목] = '" & title & "', " & _
+              "[연수일시] = " & dbDate & " " & _
+              "WHERE [ID] = " & lessonId
+
+        conn.Execute sql
+
+    End If
+
+    ' 메모 어디다 저장하는지 아직 몰라서 걍 받아만둠
+    ' memo
+
+    ' 대상자도 대강 똑가ㅇㅁ
+    ' selectedTeacherIds
 
     conn.Close
     Set conn = Nothing
 
-    Response.Redirect("administer_page.asp")
+    Response.Redirect "administer.asp"
+End If
+
+
+' 수정으로 들어왔으면 기존 값 가져옴
+title = ""
+trainingDate = ""
+memo = ""
+
+If isEdit Then
+
+    sql = "SELECT * FROM lesson_list WHERE ID = " & lessonId
+    Set rs = conn.Execute(sql)
+
+    title = rs("연수제목")
+
+    trainingDate = Year(rs("연수일시")) & "-" & _
+                   Right("0" & Month(rs("연수일시")), 2) & "-" & _
+                   Right("0" & Day(rs("연수일시")), 2)
+
+    ' 메모 컬럼 확인되면 여기서 가져오면 됨
+    ' memo = rs("메모")
+
+    rs.Close
+    Set rs = Nothing
 
 End If
+
+
+' 선생님 DB 어떻게 대상자로 저장할지 아직 몰라서 일단 껍데기
+teacherIds = Array(1001, 1002, 1003, 1004, 1005, 1006)
+teacherNames = Array("강민식", "김민수", "박영희", "이성빈", "최진형", "홍길동")
+
 %>
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>연수 등록 | 교직원 연수 출석</title>
+<meta charset="UTF-8">
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-}
-
-.page {
-    max-width:900px;
-    margin:auto;
-}
-
-.card {
-    border:1px solid #ddd;
-    padding:20px;
-    border-radius:12px;
-}
-
-.field {
-    margin-bottom:15px;
-}
-
-.control {
-    width:100%;
-    padding:10px;
-}
-
-button {
-    padding:10px 15px;
-}
-</style>
+<% If isEdit Then %>
+<title>연수 수정</title>
+<% Else %>
+<title>연수 등록</title>
+<% End If %>
 
 </head>
 
 <body>
 
-<main class="page">
-
+<% If isEdit Then %>
+<h1>연수 수정</h1>
+<% Else %>
 <h1>새 연수 등록</h1>
+<% End If %>
 
-<form id="trainingCreateForm" class="card" method="post">
+<form method="post" action="lesson_register.asp">
 
-<h2>기본 정보</h2>
+<input type="hidden" name="lessonId" value="<%= lessonId %>">
 
-<div class="field">
-<label>연수 제목</label>
-<input class="control" name="title" required>
-</div>
+<p>
+<label>연수명</label><br>
+<input type="text" name="title" value="<%= title %>" required>
+</p>
 
-<div class="field">
-<label>연수 날짜</label>
-<input class="control" name="trainingDate" type="date" required>
-</div>
+<p>
+<label>날짜</label><br>
+<input type="date" name="trainingDate" value="<%= trainingDate %>" required>
+</p>
 
-<div class="field">
-<label>시작 시간</label>
-<input class="control" name="trainingTime" type="time">
-</div>
+<p>
+<label>메모</label><br>
+<textarea name="memo" rows="5" cols="50"><%= memo %></textarea>
+</p>
 
-<div class="field">
-<label>장소</label>
-<input class="control" name="place">
-</div>
+<details>
 
-<div class="field">
-<label>연수 내용</label>
-<textarea class="control" name="description"></textarea>
-</div>
+<summary>대상자 선택</summary>
 
-<h2>참석 대상</h2>
+<p>
+<input type="checkbox" id="selectAll" checked>
+<label for="selectAll">전체 선택</label>
+</p>
 
-<label>
-<input type="checkbox" id="includeStaff" name="includeStaff" checked>
-일반 교직원 전체
+<%
+For i = 0 To UBound(teacherIds)
+%>
+
+<p>
+<input
+    type="checkbox"
+    class="teacherCheck"
+    name="targetTeacher"
+    value="<%= teacherIds(i) %>"
+    id="teacher_<%= teacherIds(i) %>"
+    checked
+>
+
+<label for="teacher_<%= teacherIds(i) %>">
+<%= teacherNames(i) %>
 </label>
+</p>
 
-<br>
+<%
+Next
+%>
 
-<label>
-<input type="checkbox" id="includeLeadership" name="includeLeadership">
-교장·교감 추가
-</label>
+</details>
 
-<br>
+<p>
+<% If isEdit Then %>
+<button type="submit">수정 내용 저장</button>
+<% Else %>
+<button type="submit">연수 등록</button>
+<% End If %>
 
-<label>
-<input type="checkbox" id="includeExternal" name="includeExternal">
-외부 참석자 추가
-</label>
-
-<br><br>
-
-<div class="field">
-<label>외부 참석 인원</label>
-<input class="control" id="externalCount" name="externalCount" type="number" value="0" min="0">
-</div>
-
-<input type="hidden" id="expectedCount" name="expectedCount" value="46">
-
-<div>
-예상 참석:
-<strong id="totalCount">46</strong>명
-</div>
-
-<h2>모바일 서명 링크</h2>
-
-<input type="hidden" id="publicToken" name="publicToken" value="tr-<%=Timer()%>">
-
-<button type="button" id="makeLink">
-URL·QR 만들기
-</button>
-
-<div id="qrArea" style="display:none;">
-<p>참석 URL</p>
-<input id="attendanceUrl" class="control" readonly>
-<div id="qrCode"></div>
-</div>
-
-<br><br>
-
-<button type="submit">
-연수 등록
-</button>
+<a href="administer.asp">취소</a>
+</p>
 
 </form>
 
-</main>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <script>
 
-function updateCount(){
+const selectAll = document.getElementById("selectAll");
+const teacherChecks = document.querySelectorAll(".teacherCheck");
 
-    let count = 0;
+selectAll.addEventListener("change", function() {
 
-    if(document.getElementById("includeStaff").checked){
-        count += 46;
-    }
-
-    if(document.getElementById("includeLeadership").checked){
-        count += 2;
-    }
-
-    count += Number(document.getElementById("externalCount").value);
-
-    document.getElementById("totalCount").innerHTML = count;
-    document.getElementById("expectedCount").value = count;
-}
-
-document.querySelectorAll("input").forEach(function(item){
-    item.addEventListener("change", updateCount);
-});
-
-
-document.getElementById("makeLink").addEventListener("click", function(){
-
-    let token = document.getElementById("publicToken").value;
-
-    let url = location.origin + "/training?token=" + token;
-
-    document.getElementById("attendanceUrl").value = url;
-
-    document.getElementById("qrArea").style.display = "block";
-
-    document.getElementById("qrCode").innerHTML = "";
-
-    new QRCode(
-        document.getElementById("qrCode"),
-        url
-    );
+    teacherChecks.forEach(function(item) {
+        item.checked = selectAll.checked;
+    });
 
 });
 
@@ -240,3 +208,8 @@ document.getElementById("makeLink").addEventListener("click", function(){
 
 </body>
 </html>
+
+<%
+conn.Close
+Set conn = Nothing
+%>
