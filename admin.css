@@ -1,11 +1,3 @@
-
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>연수 관리</title>
-
-<style>
 body {
     margin: 0;
     font-family: Arial;
@@ -19,175 +11,61 @@ h2 {
     border-bottom: 1px solid #cccccc;
 }
 
-.main {
-    width: 600px;
-    margin: 30px auto;
+#teachersAdmin {
+    display: block;
+    width: 530px;
+    margin: 25px auto 10px auto;
+    color: #31745e;
+    text-decoration: none;
 }
 
-.search {
-    margin-bottom: 15px;
-}
-
-.search input {
-    width: 470px;
-    height: 35px;
-    padding-left: 10px;
-    border: 1px solid #bbbbbb;
-}
-
-.search button {
-    width: 80px;
-    height: 39px;
-    background-color: #4c9b80;
-    color: white;
-    border: 0;
-}
-
-.list {
-    width: 100%;
-    height: 450px;
-    overflow-y: scroll;
+body > div {
+    margin: 0 auto;
     background-color: white;
     border: 1px solid #bbbbbb;
 }
 
-.item {
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #eaf5f0;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #cccccc;
+}
+
+td {
     padding: 15px;
-    height: 55px;
     border-bottom: 1px solid #dddddd;
 }
 
-.name {
-    font-weight: bold;
+td:first-child {
+    width: 75%;
+}
+
+td b {
+    display: inline-block;
     margin-bottom: 8px;
 }
 
-.date {
-    font-size: 13px;
-    color: #666666;
-}
-
-.buttons {
-    float: right;
-    margin-top: -37px;
-}
-
-.edit {
+td button {
     padding: 6px 12px;
     background-color: white;
     border: 1px solid #4c9b80;
     color: #31745e;
 }
 
-.delete {
-    padding: 6px 12px;
-    background-color: white;
-    border: 1px solid #cc7777;
-    color: #a33f3f;
-}
-
-.add {
-    float: right;
+body > button {
+    display: block;
+    margin-left: calc(50% + 215px);
     margin-top: 15px;
     width: 50px;
     height: 50px;
-    font-size: 28px;
     background-color: #4c9b80;
     color: white;
     border: 0;
     border-radius: 25px;
 }
-</style>
-
-</head>
-
-<body>
-
-<h2>연수 관리</h2>
-
-<div class="main">
-
-<div class="search">
-<input type="text" placeholder="연수명 검색">
-<button>검색</button>
-</div>
-
-<div class="list">
-
-<div class="item">
-<div class="name">AI 활용 교직원 연수</div>
-<div class="date">2026-08-24</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">개인정보 보호 교육</div>
-<div class="date">2026-08-18</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">학교폭력 예방 교육</div>
-<div class="date">2026-08-10</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">응급처치 및 안전교육</div>
-<div class="date">2026-07-22</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">교직원 성희롱 예방교육</div>
-<div class="date">2026-07-11</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">정보보안 연수</div>
-<div class="date">2026-06-30</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-<div class="item">
-<div class="name">아동학대 예방교육</div>
-<div class="date">2026-06-20</div>
-
-<div class="buttons">
-<button class="edit">수정</button>
-<button class="delete">삭제</button>
-</div>
-</div>
-
-</div>
-
-<button class="add">+</button>
-
-</div>
-
-</body>
