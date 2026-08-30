@@ -1,0 +1,225 @@
+/* =========================
+   기본 설정
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #222;
+}
+
+
+/* =========================
+   전체 페이지 영역
+========================= */
+
+#user-page {
+    width: 100%;
+    max-width: 800px;
+
+    margin: 0 auto;
+    padding: 24px;
+}
+
+
+/* =========================
+   섹션 공통
+========================= */
+
+section {
+    width: 100%;
+
+    background-color: white;
+
+    padding: 24px;
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+}
+
+
+/* =========================
+   연수 제목
+========================= */
+
+#training-title {
+    margin: 0;
+
+    font-size: 30px;
+    text-align: center;
+}
+
+
+/* =========================
+   입력 폼
+========================= */
+
+#attendance-form {
+    width: 100%;
+}
+
+.form-row {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+
+/* =========================
+   이름 입력창
+========================= */
+
+#user-name {
+    width: 100%;
+
+    padding: 12px 14px;
+
+    font-size: 16px;
+
+    border: 1px solid #aaa;
+    border-radius: 8px;
+}
+
+
+/* =========================
+   Canvas
+========================= */
+
+#signature-canvas {
+    display: block;
+
+    width: 100%;
+    height: 200px;
+
+    border: 2px solid #333;
+    background-color: white;
+
+    border-radius: 8px;
+
+    touch-action: none;
+}
+
+
+/* =========================
+   버튼
+========================= */
+
+button {
+    padding: 12px 20px;
+
+    font-size: 16px;
+
+    border: none;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+
+/* 서명 버튼 영역 */
+.signature-buttons {
+    margin-top: 12px;
+}
+
+
+/* 제출 버튼 */
+#submit-button {
+    width: 100%;
+}
+
+
+/* =========================
+   태블릿
+========================= */
+
+@media (max-width: 768px) {
+
+    #user-page {
+        padding: 16px;
+    }
+
+    section {
+        padding: 18px;
+    }
+
+    #training-title {
+        font-size: 25px;
+    }
+
+    h2 {
+        font-size: 21px;
+    }
+
+    #signature-canvas {
+        height: 180px;
+    }
+}
+
+
+/* =========================
+   스마트폰
+========================= */
+
+@media (max-width: 480px) {
+
+    #user-page {
+        padding: 10px;
+    }
+
+    section {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    #training-title {
+        font-size: 21px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    label {
+        font-size: 15px;
+    }
+
+    #user-name {
+        font-size: 16px;
+        padding: 11px;
+    }
+
+    #signature-canvas {
+        height: 150px;
+    }
+
+    button {
+        width: 100%;
+
+        font-size: 15px;
+        padding: 12px;
+    }
+
+    .signature-buttons {
+        width: 100%;
+    }
+}
