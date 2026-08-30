@@ -8,7 +8,10 @@ Dim lessonId, isEdit
 Dim title, trainingDate, memo
 Dim dateParts, dbDate
 Dim selectedTeacherIds, i
-Dim teacherIds, teacherNames
+Dim targetBits, oldTargetBits
+Dim teacherRs, allTeacherRs
+Dim teacherId, teacherName, teacherStatus
+Dim bitValue, bitPosition, isChecked
 
 lessonId = Request.QueryString("id")
 isEdit = (lessonId <> "")
@@ -25,26 +28,87 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
     trainingDate = Request.Form("trainingDate")
     memo = Request.Form("memo")
 
-    ' 날짜 input 값 Access에 넣기 좋게 바꿈
+    ' 날짜 input 값 Access에 넣기 좋게 바꾸기
     dateParts = Split(trainingDate, "-")
     dbDate = "#" & dateParts(1) & "/" & dateParts(2) & "/" & dateParts(0) & "#"
 
-    ' 대상자 저장 방식 미정, 체크된 ID들만 받아두고
-    selectedTeacherIds = ""
+    selectedTeacherIds = ","
 
     For i = 1 To Request.Form("targetTeacher").Count
-        If selectedTeacherIds <> "" Then
-            selectedTeacherIds = selectedTeacherIds & ","
+        selectedTeacherIds = selectedTeacherIds & Request.Form("targetTeacher")(i) & ","
+    Next
+
+    oldTargetBits = ""
+
+    If lessonId <> "" Then
+        Set rs = conn.Execute("SELECT [참여대상] FROM lesson_list WHERE ID = " & lessonId)
+
+        If Not IsNull(rs("참여대상")) Then
+            oldTargetBits = rs("참여대상")
         End If
 
-        selectedTeacherIds = selectedTeacherIds & Request.Form("targetTeacher")(i)
-    Next
+        rs.Close
+        Set rs = Nothing
+    End If
+
+
+    ' 체크한 사람 기준으로 참여대상 10101 이런거 만듦
+    ' 수정이면 휴직/퇴직은 예전값 그대로 두고
+    targetBits = ""
+
+    Set allTeacherRs = conn.Execute("SELECT ID, 재직상태 FROM teachers ORDER BY ID")
+
+    Do While Not allTeacherRs.EOF
+
+        teacherId = CLng(allTeacherRs("ID"))
+        teacherStatus = allTeacherRs("재직상태")
+
+        Do While Len(targetBits) < teacherId - 1
+            bitPosition = Len(targetBits) + 1
+
+            If lessonId <> "" And Len(oldTargetBits) >= bitPosition Then
+                targetBits = targetBits & Mid(oldTargetBits, bitPosition, 1)
+            Else
+                targetBits = targetBits & "0"
+            End If
+        Loop
+
+        If teacherStatus = "재직" Then
+
+            If InStr(selectedTeacherIds, "," & teacherId & ",") > 0 Then
+                bitValue = "1"
+            Else
+                bitValue = "0"
+            End If
+
+        Else
+
+            If lessonId <> "" And Len(oldTargetBits) >= teacherId Then
+                bitValue = Mid(oldTargetBits, teacherId, 1)
+            Else
+                bitValue = "0"
+            End If
+
+        End If
+
+        targetBits = targetBits & bitValue
+
+        allTeacherRs.MoveNext
+    Loop
+
+    allTeacherRs.Close
+    Set allTeacherRs = Nothing
+
+    If lessonId <> "" And Len(oldTargetBits) > Len(targetBits) Then
+        targetBits = targetBits & Mid(oldTargetBits, Len(targetBits) + 1)
+    End If
+
 
     If lessonId = "" Then
 
         ' 새 연수 등록
-        sql = "INSERT INTO lesson_list ([연수제목], [연수일시]) VALUES (" & _
-              "'" & title & "', " & dbDate & ")"
+        sql = "INSERT INTO lesson_list ([연수제목], [연수일시], [참여대상], [메모]) VALUES (" & _
+              "'" & title & "', " & dbDate & ", '" & targetBits & "', '" & memo & "')"
 
         conn.Execute sql
 
@@ -53,18 +117,14 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
         ' 기존 연수 수정
         sql = "UPDATE lesson_list SET " & _
               "[연수제목] = '" & title & "', " & _
-              "[연수일시] = " & dbDate & " " & _
+              "[연수일시] = " & dbDate & ", " & _
+              "[참여대상] = '" & targetBits & "', " & _
+              "[메모] = '" & memo & "' " & _
               "WHERE [ID] = " & lessonId
 
         conn.Execute sql
 
     End If
-
-    ' 메모 어디다 저장하는지 아직 몰라서 걍 받아만둠
-    ' memo
-
-    ' 대상자도 대강 똑가ㅇㅁ
-    ' selectedTeacherIds
 
     conn.Close
     Set conn = Nothing
@@ -73,10 +133,11 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 End If
 
 
-' 수정으로 들어왔으면 기존 값 가져옴
+' 수정으로 들어올때 기존 값 가져오는거
 title = ""
 trainingDate = ""
 memo = ""
+targetBits = ""
 
 If isEdit Then
 
@@ -89,8 +150,13 @@ If isEdit Then
                    Right("0" & Month(rs("연수일시")), 2) & "-" & _
                    Right("0" & Day(rs("연수일시")), 2)
 
-    ' 메모 컬럼 확인되면 여기서 가져오면 됨
-    ' memo = rs("메모")
+    If Not IsNull(rs("메모")) Then
+        memo = rs("메모")
+    End If
+
+    If Not IsNull(rs("참여대상")) Then
+        targetBits = rs("참여대상")
+    End If
 
     rs.Close
     Set rs = Nothing
@@ -98,9 +164,10 @@ If isEdit Then
 End If
 
 
-' 선생님 DB 어떻게 대상자로 저장할지 아직 몰라서 일단 껍데기
-teacherIds = Array(1001, 1002, 1003, 1004, 1005, 1006)
-teacherNames = Array("강민식", "김민수", "박영희", "이성빈", "최진형", "홍길동")
+' 재직인 썜만
+sql = "SELECT ID, 이름 FROM teachers WHERE 재직상태 = '재직' ORDER BY 이름"
+Set teacherRs = Server.CreateObject("ADODB.Recordset")
+teacherRs.Open sql, conn
 
 %>
 
@@ -150,12 +217,21 @@ teacherNames = Array("강민식", "김민수", "박영희", "이성빈", "최진
 <summary>대상자 선택</summary>
 
 <p>
-<input type="checkbox" id="selectAll" checked>
+<input type="checkbox" id="selectAll"<% If Not isEdit Then Response.Write " checked" %>>
 <label for="selectAll">전체 선택</label>
 </p>
 
 <%
-For i = 0 To UBound(teacherIds)
+Do While Not teacherRs.EOF
+
+    teacherId = teacherRs("ID")
+    teacherName = teacherRs("이름")
+
+    If isEdit Then
+        isChecked = (Len(targetBits) >= teacherId And Mid(targetBits, teacherId, 1) = "1")
+    Else
+        isChecked = True
+    End If
 %>
 
 <p>
@@ -163,18 +239,19 @@ For i = 0 To UBound(teacherIds)
     type="checkbox"
     class="teacherCheck"
     name="targetTeacher"
-    value="<%= teacherIds(i) %>"
-    id="teacher_<%= teacherIds(i) %>"
-    checked
+    value="<%= teacherId %>"
+    id="teacher_<%= teacherId %>"
+    <% If isChecked Then Response.Write "checked" %>
 >
 
-<label for="teacher_<%= teacherIds(i) %>">
-<%= teacherNames(i) %>
+<label for="teacher_<%= teacherId %>">
+<%= teacherName %>
 </label>
 </p>
 
 <%
-Next
+    teacherRs.MoveNext
+Loop
 %>
 
 </details>
@@ -210,6 +287,9 @@ selectAll.addEventListener("change", function() {
 </html>
 
 <%
+teacherRs.Close
+Set teacherRs = Nothing
+
 conn.Close
 Set conn = Nothing
 %>
