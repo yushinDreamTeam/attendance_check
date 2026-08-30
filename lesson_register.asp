@@ -9,9 +9,10 @@ Dim title, trainingDate, memo
 Dim dateParts, dbDate
 Dim selectedTeacherIds, i
 Dim targetBits, oldTargetBits
-Dim teacherRs, allTeacherRs
+Dim teacherRs, allTeacherRs, signatureTeacherRs
 Dim teacherId, teacherName, teacherStatus
 Dim bitValue, bitPosition, isChecked, showTeacher
+Dim signatureExists
 
 lessonId = Request.QueryString("id")
 isEdit = (lessonId <> "")
@@ -119,6 +120,13 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 
         conn.Execute sql
 
+        ' 방금 등록된 연수 ID 가져오기
+        Set rs = conn.Execute("SELECT @@IDENTITY AS newID")
+        lessonId = CLng(rs("newID"))
+
+        rs.Close
+        Set rs = Nothing
+
     Else
 
         ' 기존 연수 수정
@@ -132,6 +140,54 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
         conn.Execute sql
 
     End If
+
+
+    ' 연수 대상이랑 signatures 내용 맞춰두기
+    Set signatureTeacherRs = conn.Execute("SELECT ID, 이름 FROM teachers ORDER BY ID")
+
+    Do While Not signatureTeacherRs.EOF
+
+        teacherId = CLng(signatureTeacherRs("ID"))
+        teacherName = signatureTeacherRs("이름")
+
+        If Len(targetBits) >= teacherId And Mid(targetBits, teacherId, 1) = "1" Then
+
+            Set rs = conn.Execute( _
+                "SELECT COUNT(*) AS cnt FROM signatures " & _
+                "WHERE [lessonID] = " & CLng(lessonId) & _
+                " AND [teacherID] = " & teacherId _
+            )
+
+            signatureExists = (CLng(rs("cnt")) > 0)
+
+            rs.Close
+            Set rs = Nothing
+
+            ' 새로 대상이 된 사람만 한 줄 추가, 기존 서명주소는 안건드림
+            If Not signatureExists Then
+                sql = "INSERT INTO signatures ([lessonID], [teacherID], [이름]) VALUES (" & _
+                      CLng(lessonId) & ", " & teacherId & ", '" & teacherName & "')"
+
+                conn.Execute sql
+            End If
+
+        Else
+
+            ' 대상에서 빠지면 그 연수의 서명칸도 같이 뺌
+            sql = "DELETE FROM signatures " & _
+                  "WHERE [lessonID] = " & CLng(lessonId) & _
+                  " AND [teacherID] = " & teacherId
+
+            conn.Execute sql
+
+        End If
+
+        signatureTeacherRs.MoveNext
+    Loop
+
+    signatureTeacherRs.Close
+    Set signatureTeacherRs = Nothing
+
 
     conn.Close
     Set conn = Nothing
