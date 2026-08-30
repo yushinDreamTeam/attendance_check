@@ -69,7 +69,7 @@
 
     <br>
 
-    <button style="font-size:25px;">+</button>
+    <button style="font-size:25px;" onclick="location.href='lesson_register.asp'">+</button>
 
 </body>
 </html>
