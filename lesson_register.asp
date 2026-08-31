@@ -11,7 +11,7 @@ Dim selectedTeacherIds, i
 Dim targetBits, oldTargetBits
 Dim teacherRs, allTeacherRs
 Dim teacherId, teacherName, teacherStatus
-Dim bitValue, bitPosition, isChecked
+Dim bitValue, bitPosition, isChecked, showTeacher
 
 lessonId = Request.QueryString("id")
 isEdit = (lessonId <> "")
@@ -53,7 +53,7 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 
 
     ' 체크한 사람 기준으로 참여대상 10101 이런거 만듦
-    ' 수정이면 휴직/퇴직은 예전값 그대로 두고
+    ' 기존 대상이던 휴직/퇴직도 수정화면에서 체크 풀면 빠집니다 네
     targetBits = ""
 
     Set allTeacherRs = conn.Execute("SELECT ID, 재직상태 FROM teachers ORDER BY ID")
@@ -83,8 +83,15 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
 
         Else
 
-            If lessonId <> "" And Len(oldTargetBits) >= teacherId Then
-                bitValue = Mid(oldTargetBits, teacherId, 1)
+            ' 휴직/퇴직인데 원래 대상이었던 사람만 수정 가능하게 거름
+            If lessonId <> "" And Len(oldTargetBits) >= teacherId And Mid(oldTargetBits, teacherId, 1) = "1" Then
+
+                If InStr(selectedTeacherIds, "," & teacherId & ",") > 0 Then
+                    bitValue = "1"
+                Else
+                    bitValue = "0"
+                End If
+
             Else
                 bitValue = "0"
             End If
@@ -164,8 +171,8 @@ If isEdit Then
 End If
 
 
-' 재직인 썜만
-sql = "SELECT ID, 이름 FROM teachers WHERE 재직상태 = '재직' ORDER BY 이름"
+' 재직자는 전부, 수정이면 기존 대상이던 휴직/퇴직도 같이 불러옴
+sql = "SELECT ID, 이름, 재직상태 FROM teachers ORDER BY 이름"
 Set teacherRs = Server.CreateObject("ADODB.Recordset")
 teacherRs.Open sql, conn
 
@@ -224,14 +231,30 @@ teacherRs.Open sql, conn
 <%
 Do While Not teacherRs.EOF
 
-    teacherId = teacherRs("ID")
+    teacherId = CLng(teacherRs("ID"))
     teacherName = teacherRs("이름")
+    teacherStatus = teacherRs("재직상태")
 
-    If isEdit Then
-        isChecked = (Len(targetBits) >= teacherId And Mid(targetBits, teacherId, 1) = "1")
-    Else
-        isChecked = True
+    showTeacher = False
+
+    If teacherStatus = "재직" Then
+        showTeacher = True
+
+    ElseIf isEdit Then
+        If Len(targetBits) >= teacherId Then
+            If Mid(targetBits, teacherId, 1) = "1" Then
+                showTeacher = True
+            End If
+        End If
     End If
+
+    If showTeacher Then
+
+        If isEdit Then
+            isChecked = (Len(targetBits) >= teacherId And Mid(targetBits, teacherId, 1) = "1")
+        Else
+            isChecked = True
+        End If
 %>
 
 <p>
@@ -245,11 +268,13 @@ Do While Not teacherRs.EOF
 >
 
 <label for="teacher_<%= teacherId %>">
-<%= teacherName %>
+<%= teacherName %><% If teacherStatus <> "재직" Then %> (<%= teacherStatus %>)<% End If %>
 </label>
 </p>
 
 <%
+    End If
+
     teacherRs.MoveNext
 Loop
 %>
