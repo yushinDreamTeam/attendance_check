@@ -46,9 +46,31 @@ td:first-child {
     width: 75%;
 }
 
-td b {
+.lesson-title-link {
+    display: block;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #1f3d34;
+    text-decoration: none;
+    background-color: #f7fbf9;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lesson-title-link:hover {
+    border-color: #4c9b80;
+    background-color: #edf8f4;
+}
+
+.lesson-title-link b {
     display: inline-block;
     margin-bottom: 8px;
+    color: #1f3d34;
+}
+
+.lesson-title-link span {
+    color: #4a5d57;
 }
 
 td button {

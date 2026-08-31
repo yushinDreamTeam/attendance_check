@@ -28,7 +28,7 @@
     <button>검색</button>
     --->
     
-    <a id = "teachersAdmin" href="teachers.asp">교직원 목록 관리</a>
+    <a id = "teachersAdmin" href="teachers.asp">교직원 관리</a>
     <div style="width:530px; height:450px; overflow-y:scroll;">
         <table>
             <thead>
@@ -51,11 +51,14 @@
                 %>
                     <tr>
                         <td>
-                            <b><%= rs("연수제목") %></b><br>
-                            <%= rs("연수일시") %>
+                            <a class="lesson-title-link" href="lesson_register.asp?id=<%= Server.URLEncode(editId) %>">
+                                <b><%= rs("연수제목") %></b><br>
+                                <span><%= rs("연수일시") %></span>
+                            </a>
                         </td>
                         <td>
-                            <button type="button" onclick="location.href='lesson_register.asp?id=<%= Server.URLEncode(editId) %>'">수정</button>
+                            <button type="button" onclick="location.href='qr_viewer.asp?id=<%= Server.URLEncode(editId) %>'">QR</button>
+                            <button type="button" onclick="location.href='printing.asp?id=<%= Server.URLEncode(editId) %>'">출력</button>
                         </td>
                     </tr>
                 <%
