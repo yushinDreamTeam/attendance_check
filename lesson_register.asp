@@ -118,6 +118,23 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
               "'" & title & "', " & dbDate & ", '" & targetBits & "', '" & memo & "')"
 
         conn.Execute sql
+        ' 새로 생성된 lesson_id 가져오기
+        Set rs = conn.Execute("SELECT @@IDENTITY AS newLessonId")
+        lessonId = rs("newLessonId")
+        rs.Close
+        Set rs = Nothing
+
+        ' 참여 대상별로 signature_data 행 생성
+        If Len(selectedTeacherIds) > 1 Then
+            For i = 1 To Request.Form("targetTeacher").Count
+                teacherId = Request.Form("targetTeacher")(i)
+
+                sql = "INSERT INTO signature_data ([연수id], [사용자id], [파일경로]) VALUES (" & _
+                    lessonId & ", " & teacherId & ", '')"
+
+                conn.Execute sql
+            Next
+        End If
 
     Else
 
@@ -130,6 +147,54 @@ If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
               "WHERE [ID] = " & lessonId
 
         conn.Execute sql
+
+        ' signature_data도 현재 선택된 참여 대상과 동기화
+        Dim selectedSet, existingRs, selectedUserId, keepUserId
+        selectedSet = ","
+
+        If Request.Form("targetTeacher").Count > 0 Then
+            For i = 1 To Request.Form("targetTeacher").Count
+                selectedUserId = Request.Form("targetTeacher")(i)
+                selectedSet = selectedSet & selectedUserId & ","
+            Next
+        End If
+
+        ' 1) 선택 해제된 사람은 signature_data에서 제거
+        sql = "SELECT [사용자id] FROM signature_data WHERE [연수id] = " & lessonId
+        Set existingRs = conn.Execute(sql)
+
+        Do While Not existingRs.EOF
+            keepUserId = CStr(existingRs("사용자id"))
+
+            If InStr(selectedSet, "," & keepUserId & ",") = 0 Then
+                sql = "DELETE FROM signature_data WHERE [연수id] = " & lessonId & " AND [사용자id] = " & keepUserId
+                conn.Execute sql
+            End If
+
+            existingRs.MoveNext
+        Loop
+
+        existingRs.Close
+        Set existingRs = Nothing
+
+        ' 2) 새로 선택된 사람은 row 생성 (기존 서명이 있으면 유지)
+        If Request.Form("targetTeacher").Count > 0 Then
+            For i = 1 To Request.Form("targetTeacher").Count
+                selectedUserId = Request.Form("targetTeacher")(i)
+
+                sql = "SELECT COUNT(*) AS cnt FROM signature_data WHERE [연수id] = " & lessonId & " AND [사용자id] = " & selectedUserId
+                Set existingRs = conn.Execute(sql)
+
+                If existingRs("cnt") = 0 Then
+                    sql = "INSERT INTO signature_data ([연수id], [사용자id], [파일경로]) VALUES (" & _
+                          lessonId & ", " & selectedUserId & ", '')"
+                    conn.Execute sql
+                End If
+
+                existingRs.Close
+                Set existingRs = Nothing
+            Next
+        End If
 
     End If
 

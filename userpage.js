@@ -99,22 +99,54 @@ document
         event.preventDefault();
 
         if (!hasSignature) {
-
             alert("서명을 입력해주세요.");
-
             return;
         }
 
-        const userName =
-            document.getElementById("user-name").value;
+        const userName = document.getElementById("user-name").value.trim();
+        const lessonId = new URLSearchParams(window.location.search).get("id");
 
-        canvas.toBlob(function(blob) {
+        if (!userName) {
+            alert("이름을 입력해주세요.");
+            return;
+        }
 
-            console.log("이름:", userName);
-            console.log("서명:", blob);
+        if (!lessonId) {
+            alert("연수 ID가 없습니다.");
+            return;
+        }
 
-            alert("제출되었습니다.");
+        const signatureData = canvas.toDataURL("image/png");
 
-        }, "image/png");
+        fetch("save_signature.asp", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            },
+            body: new URLSearchParams({
+                lessonId: lessonId,
+                userName: userName,
+                signatureData: signatureData
+            })
+        })
+        .then(function(response) {
+            return response.text();
+        })
+        .then(function(result) {
+            if (result && result.indexOf("성공") >= 0) {
+                window.location.href = "signature_success.asp";
+                return;
+            }
+
+            if (result && result.indexOf("오류") >= 0) {
+                alert(result);
+                return;
+            }
+
+            window.location.href = "signature_success.asp";
+        })
+        .catch(function(error) {
+            alert("서명 저장 중 오류가 발생했습니다.");
+        });
 
     });
