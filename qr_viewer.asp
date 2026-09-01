@@ -10,7 +10,7 @@ Dim wifiSSID, ipAddress
 Dim i, pos, inWifi
 Dim scriptPath, basePath, attendanceUrl, qrUrl
 
-' 이 코드는 그저 갓, goat 최진형씨의 코드를 일부 가져다썼습니다
+' 이 코드는 그저 갓, goat 최진형씨의 코드를 일부 가져다썻습니다
 
 lessonId = Request.QueryString("id")
 
@@ -152,9 +152,10 @@ End If
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>연수 QR</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="qr-page">
 
 <h1><%= lessonTitle %></h1>
 <p><%= lessonDateText %></p>
