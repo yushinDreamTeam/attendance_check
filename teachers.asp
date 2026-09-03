@@ -1,11 +1,98 @@
 <%@ Language=VBScript CodePage="65001"%>
 <%
+Response.Buffer = True
+Function StrValue(v)
+    Dim value
+    If IsObject(v) Then value = v.Value Else value = v
+    If IsNull(value) Or IsEmpty(value) Then StrValue = "" Else StrValue = CStr(value)
+End Function
+
+Function ParamText(v)
+    Dim s, kind
+    s = StrValue(v)
+    kind = 202
+    If Len(s) > 255 Then kind = 203
+    ParamText = Array(kind, Len(s) + 1, s)
+End Function
+
+Function ParamID(v)
+    ParamID = Array(3, 4, CLng(v))
+End Function
+
+Function RunSQL(c, sql, params)
+    Dim cmd, affected
+    Set cmd = NewCommand(c, sql, params)
+    cmd.Execute affected, , 128
+    RunSQL = affected
+End Function
+
+Sub FailPage(status, message)
+    Response.Status = status
+    Response.Write "<meta charset='utf-8'><p>" & H(message) & "</p><a href='javascript:history.back()'>돌아가기</a>"
+    Response.End
+End Sub
+
+Function H(v)
+    H = Server.HTMLEncode(StrValue(v))
+End Function
+
+Function NewCommand(c, sql, params)
+    Dim cmd, p, i
+    Set cmd = Server.CreateObject("ADODB.Command")
+    Set cmd.ActiveConnection = c
+    cmd.CommandType = 1
+    cmd.CommandText = sql
+    For i = 0 To UBound(params)
+        p = params(i)
+        cmd.Parameters.Append cmd.CreateParameter("p" & i, p(0), 1, p(1), p(2))
+    Next
+    Set NewCommand = cmd
+End Function
+%>
+<%
     Response.CodePage = 65001
     Response.CharSet = "utf-8"
 
     Dim conn, sql, rs, updateRs, teacherId, teacherName, status
     Set conn = Server.CreateObject("ADODB.Connection")
     conn.Open "DSN=attendanceDB"
+
+    ' POST는 화면 출력 전에 처리
+    Dim msg, transactionOpen, data, n, newName, newStatus
+    Sub SaveTeachers()
+        conn.BeginTrans
+        transactionOpen = True
+        Set updateRs = conn.Execute("SELECT ID FROM teachers ORDER BY ID")
+        If Not updateRs.EOF Then
+            data = updateRs.GetRows()
+            updateRs.Close
+            For n = 0 To UBound(data,2)
+                teacherId = CLng(data(0,n))
+                newName = Trim(StrValue(Request.Form("teacherName_" & teacherId)))
+                newStatus = StrValue(Request.Form("status_" & teacherId))
+                If newName = "" Or Len(newName)>255 Then Err.Raise vbObjectError+1,"교직원","이름을 확인해 주세요."
+                If newStatus<>"재직" And newStatus<>"휴직" And newStatus<>"퇴직" Then Err.Raise vbObjectError+2,"교직원","재직 상태를 확인해 주세요."
+                Call RunSQL(conn,"UPDATE teachers SET [이름]=?,[재직상태]=? WHERE ID=?",Array(ParamText(newName),ParamText(newStatus),ParamID(teacherId)))
+            Next
+        Else
+            updateRs.Close
+        End If
+        conn.CommitTrans
+        transactionOpen = False
+    End Sub
+    If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+        Application.Lock
+        On Error Resume Next
+        SaveTeachers
+        msg = Err.Description
+        If transactionOpen Then conn.RollbackTrans
+        conn.Close
+        Err.Clear
+        On Error GoTo 0
+        Application.UnLock
+        If msg<>"" Then FailPage "400 Bad Request","저장하지 못했습니다. " & msg
+        Response.Redirect "teachers.asp"
+    End If
 
     sql = "SELECT * FROM teachers ORDER BY 이름"
     Set rs = Server.CreateObject("ADODB.Recordset")
@@ -46,8 +133,8 @@
                     Else
                         Do While Not rs.EOF
                             teacherId = rs.Fields("ID").Value
-                            teacherName = rs.Fields("이름").Value
-                            status = rs.Fields("재직상태").Value
+                            teacherName = StrValue(rs.Fields("이름"))
+                            status = StrValue(rs.Fields("재직상태"))
                     %>
                         <tr>
                             <td>
@@ -83,29 +170,7 @@
             <button type="submit" name="save" value="1">저장</button>
         </form>
 
-        <%
-        If Request.Form("save") = "1" Then
-            Dim key, itemId, newName, newStatus
-            For Each key In Request.Form
-                If Left(key, 12) = "teacherName_" Then
-                    itemId = Mid(key, 13)
-                    newName = Trim(Request.Form(key))
-                    newStatus = Request.Form("status_" & itemId)
 
-                    If newName <> "" Then
-                        sql = "UPDATE teachers SET " & _
-                        "이름 = '" & Replace(newName, "'", "''") & "', " & _
-                        "재직상태 = '" & Replace(newStatus, "'", "''") & "' " & _
-                        "WHERE ID = " & itemId
-                        conn.Execute sql
-                    End If
-
-                End If
-            Next
-
-            Response.Redirect "teachers.asp"
-        End If
-        %>
 
         <!-- 교직원 추가 버튼
         <button type="button" onclick="location.href='teacher_add.asp'">교직원 추가</button> -->

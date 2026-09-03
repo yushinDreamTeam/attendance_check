@@ -550,3 +550,8 @@ body.teachers-page {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* 참고 화면의 색상과 카드 형태 */
+:root{--page-bg:#f8fafc;--text:#334155;--text-soft:#64748b;--primary:#2563eb;--primary-hover:#1d4ed8;--border:#dbe2eb;--radius:12px}
+.admin-page>h2,.teachers-page>h2,.register-page>h1,.qr-page>h1{background:#0f172a;color:white;padding:16px 20px;border-radius:10px;border-bottom:0}
+button:disabled{opacity:.6;cursor:wait}

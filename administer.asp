@@ -1,5 +1,17 @@
 <%@ Language="VBScript" CodePage="65001" %>
 <%
+Response.Buffer = True
+Function H(v)
+    H = Server.HTMLEncode(StrValue(v))
+End Function
+
+Function StrValue(v)
+    Dim value
+    If IsObject(v) Then value = v.Value Else value = v
+    If IsNull(value) Or IsEmpty(value) Then StrValue = "" Else StrValue = CStr(value)
+End Function
+%>
+<%
     Response.CodePage = 65001
     Response.CharSet = "utf-8"
 
@@ -53,8 +65,8 @@
                     <tr>
                         <td>
                             <a class="lesson-title-link" href="lesson_register.asp?id=<%= Server.URLEncode(editId) %>">
-                                <b><%= rs("연수제목") %></b><br>
-                                <span><%= rs("연수일시") %></span>
+                                <b><%= H(rs("연수제목")) %></b><br>
+                                <span><%= H(rs("연수일시")) %></span>
                             </a>
                         </td>
                         <td>

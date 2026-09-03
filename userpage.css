@@ -174,3 +174,12 @@ h1 {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* 화면 비율을 바꾸지 않아 서명도 같은 비율로 저장 */
+:root{--page-bg:#f8fafc;--text:#334155;--primary:#2563eb;--primary-hover:#1d4ed8;--border:#dbe2eb;--radius:12px}
+#signature-canvas{height:auto;aspect-ratio:3/1;border:1px dashed #94a3b8}
+h1{background:#0f172a;color:white;padding:16px 20px;border-radius:10px;overflow-wrap:anywhere}
+.lesson-date{width:min(100%,720px);margin:0 auto 18px;color:#64748b}
+#submit-status{min-height:24px;color:#b42318;font-size:14px;overflow-wrap:anywhere}
+button:disabled{opacity:.6;cursor:wait}
+.success-page{max-width:720px;margin:0 auto;text-align:center}.success-card{padding:24px;background:white;border:1px solid var(--border);border-radius:var(--radius)}.success-card h1{width:100%}.success-mark{font-size:40px;color:#2563eb}.success-card a{color:#2563eb}
