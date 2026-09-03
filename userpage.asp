@@ -31,6 +31,7 @@
             touch-action: none;
         }
     </style>
+    <link rel="stylesheet" href="userpage.css">
 </head>
 
 <body>

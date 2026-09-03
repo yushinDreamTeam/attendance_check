@@ -16,11 +16,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연수 관리</title>
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="admin-page">
     <h2>연수 관리</h2>
 
     <!--일단 지금 검색기능은 못할듯

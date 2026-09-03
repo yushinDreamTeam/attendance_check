@@ -304,6 +304,8 @@ teacherRs.Open sql, conn
 
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
 
 <% If isEdit Then %>
 <title>연수 수정</title>
@@ -313,7 +315,7 @@ teacherRs.Open sql, conn
 
 </head>
 
-<body>
+<body class="register-page">
 
 <% If isEdit Then %>
 <h1>연수 수정</h1>
